@@ -1,6 +1,7 @@
 import json
 from saleApp import app
-from models import Category, Product
+from models import Category, Product, User
+import hashlib
 
 
 def load_categories():
@@ -35,6 +36,13 @@ def load_products(q=None, cate_id=None, page=None):
 
     return query.all()
 
+def get_user_by_id(id):
+    return User.query.get(id)
+
+def auth_user(username, password):
+    password = str(hashlib.md5(password.encode("utf-8")).hexdigest())
+    return User.query.filter(User.username.__eq__(username)and User.password.__eq__(password)).first()
+
 def count_product():
     return Product.query.count()
 
@@ -49,4 +57,5 @@ def load_products_by_id(id):
     return Product.query.get(id)
 
 if __name__ == "__main__":
-    print(load_categories())
+    with app.app_context():
+        print(auth_user("user", "123"))
