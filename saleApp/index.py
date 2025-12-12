@@ -1,10 +1,13 @@
-from flask import render_template, request, redirect, session
+import locale
+
+from flask import render_template, request, redirect, session, jsonify
 import math
 import dao
 from saleApp import app, login, admin, db
 from saleApp.decorators import anonymous_required
 from flask_login import login_user, current_user, logout_user, login_required
 import cloudinary.uploader
+import utils
 
 @app.route("/")
 def index():
@@ -23,7 +26,8 @@ def details(id):
 @app.context_processor
 def common_attribute():
     return {
-        "cates": dao.load_categories()
+        "cates": dao.load_categories(),
+        "stats_cart": utils.count_cart(session.get('cart'))
     }
 
 @app.route("/login", methods=["get", "post"])
@@ -92,21 +96,81 @@ def register():
 
 @app.route('/cart')
 def cart():
-    session['cart'] = {
-        "1": {
-            "id": 1,
-            "name": "Iphone 15 Promax",
-            "price": 10000,
-            "quantity": 2
-        },
-        "2": {
-            "id": 2,
-            "name": "Samsung Galaxy",
-            "price": 9000,
+    # session['cart'] = {
+    #     "1": {
+    #         "id": 1,
+    #         "name": "Iphone 15 Promax",
+    #         "price": 10000,
+    #         "quantity": 2
+    #     },
+    #     "2": {
+    #         "id": 2,
+    #         "name": "Samsung Galaxy",
+    #         "price": 9000,
+    #         "quantity": 1
+    #     }
+    # }
+    return render_template('cart.html')
+
+
+@app.route("/api/carts", methods=['post'])
+def add_to_cart():
+    cart = session.get('cart')
+
+    if not cart:
+        cart = {}
+
+    id = str(request.json.get('id'))
+
+    if id in cart:
+        cart[id]["quantity"] += 1
+    else:
+        cart[id] = {
+            "id": id,
+            "name": request.json.get('name'),
+            "price": request.json.get('price'),
             "quantity": 1
         }
-    }
-    return render_template('cart.html')
+
+    session['cart'] = cart
+
+    print(session['cart'])
+
+    return jsonify(utils.count_cart(cart=cart))
+
+@app.route("/api/carts/<id>", methods=['put'])
+def update_cart(id):
+    cart = session.get('cart')
+
+    if cart and id in cart:
+        cart[id]["quantity"] = int(request.json.get("quantity"))
+        session['cart'] = cart
+
+    return jsonify(utils.count_cart(cart=cart))
+
+@app.route("/api/carts/<id>", methods=['delete'])
+def delete_cart(id):
+    cart = session.get('cart')
+
+    if cart and id in cart:
+        del session['cart'][id]
+        session['cart'] = cart
+
+    return jsonify(utils.count_cart(cart=cart))
+
+
+@app.route("/api/pay", methods=['post'])
+@login_required
+def pay():
+    cart = session.get('cart')
+
+    try:
+        dao.add_receipt(cart)
+    except Exception as ex:
+        return jsonify({"status": 500, "err_msg": ex})
+    else:
+        del session['cart']
+        return jsonify({"status": 200})
 
 @login.user_loader
 def get_user(user_id):

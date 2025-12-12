@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from saleApp import db, app
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Boolean, DateTime, Enum, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Relationship
 from flask_login import UserMixin
 from enum import Enum as RoleEnum
 
@@ -35,6 +35,22 @@ class Product(Base):
     image = Column(String(300), default="https://res.cloudinary.com/dy1unykph/image/upload/v1741254148/aa0aawermmvttshzvjhc.png")
     cate_id = Column(Integer, ForeignKey(Category.id), nullable=False)
     description = Column(Text)
+
+class Receipt(db.Model):
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey(User.id), nullable=True)
+    details = Relationship('ReciptDetail', backref='receipt', lazy=True)
+    active = Column(Boolean, default=True)
+    created_date = Column(DateTime, default=datetime.now())
+
+class ReceiptDetail(db.Model):
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    receipt_id = Column(Integer, ForeignKey(Receipt.id), nullable=True)
+    prod_id = Column(Integer, ForeignKey(Product.id), nullable=True)
+    unit_price = Column(Float, default=0)
+    quantity = Column(Integer, default=0)
+    active = Column(Boolean, default=True)
+    created_date = Column(DateTime, default=datetime.now())
 
 if __name__=="__main__":
     with app.app_context():

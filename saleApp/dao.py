@@ -1,5 +1,8 @@
 import json
-from saleApp.models import Category, Product, User
+
+from flask_login import current_user
+
+from saleApp.models import Category, Product, User, Receipt, ReceiptDetail
 from saleApp import app, db
 import hashlib
 
@@ -62,6 +65,21 @@ def get_product_by_id(id):
     #
     #     return None
     return Product.query.get(id)
+
+def add_receipt(cart):
+    if cart:
+        print(current_user)
+        r = Receipt(user=current_user)
+        db.session.add(r)
+
+
+        for p in cart.values():
+            d = ReceiptDetail(prod_id=p['id'], receipt=r, unit_price=p['price'], quantity=p['quantity'])
+            db.session.add(d)
+
+        db.session.commit()
+
+
 
 if __name__=="__main__":
     with app.app_context():
