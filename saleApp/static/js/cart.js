@@ -1,4 +1,4 @@
-function addToCart(id, name, price){
+function addToCart(id,name,price){
     fetch("api/carts",{
         method: "post",
         body: JSON.stringify({
@@ -10,34 +10,36 @@ function addToCart(id, name, price){
             "content-type": "application/json"
         }
     }).then(res => res.json()).then(data=>{
-        let d = document.getElementsByClassName("cart-counter")
-        for (let e of d){
-            e.innerText = data.total_quantity
+        let d = document.getElementsByClassName('cart-counter');
+        for(let e of d){
+            e.innerText = data.total_quantity;
         }
     })
 }
 
+
 function updateCart(productId, obj){
-    fetch(`api/carts/${productId}`, {
-        method: 'put',
+    fetch(`api/carts/${productId}`,{
+        method: "put",
         body: JSON.stringify({
             "quantity": parseInt(obj.value)
         }),
         headers: {
             "content-type": "application/json"
         }
-    }).then(res => res.json()).then(data => {
-        let d = document.getElementsByClassName("cart-counter");
+    }).then(res => res.json()).then(data=>{
+        let d = document.getElementsByClassName('cart-counter');
         for(let e of d){
             e.innerText = data.total_quantity;
         }
 
-        let d2 = document.getElementsByClassName("cart-amount");
+        let d2 = document.getElementsByClassName('cart-amount');
         for(let e of d2){
             e.innerText = data.total_amount.toLocaleString("en");
         }
     })
 }
+
 
 function deleteCart(id){
     if(confirm("Co chac chan xoa?")===true){
@@ -52,7 +54,7 @@ function deleteCart(id){
                 e.innerText = data.total_quantity;
             }
 
-            l   et d2 = document.getElementsByClassName("cart-amount");
+            let d2 = document.getElementsByClassName("cart-amount");
             for(let e of d2){
                 e.innerText = data.total_amount.toLocaleString("en");
             }
@@ -66,7 +68,7 @@ function deleteCart(id){
 
 function pay(){
     if(confirm("Co chac chan thanh toan?")===true){
-        fetch(`api/pay`, {
+        fetch("api/pay", {
             method: 'post',
             headers: {
                 "content-type": "application/json"

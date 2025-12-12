@@ -15,7 +15,7 @@
         <th></th>
     </tr>
     {% for p in session['cart'].values()%}
-    <tr>
+    <tr id="product{{p.id}}">
         <td>{{p.id}}</td>
         <td>{{p.name}}</td>
         <td>{{"{:,.0f}".format(p.price)}} VND</td>
@@ -34,8 +34,13 @@
     <h3>Tổng số tiền thanh toán: <span class="cart-amount">{{"{:,.0f}   ".format(stats_cart.total_amount)}} VND</span></h3>
 </div>
 
+{%if current_user.is_authenticated%}
 <button class="btn btn-success" onclick="pay()">Thanh toán</button>
+{%else%}
 
+<h3 >Vui lòng <a href="/login?next=/cart">đăng nhập</a> để thanh toán!</h3>
+
+{%endif%}
 {%else%}
 <div class="alert alert-info">Không có sản phẩm trong giỏ hàng!</div>
 {%endif%}

@@ -42,11 +42,14 @@ def login_my_user():
 
         if user:
             login_user(user)
-            return redirect("/")
+            next = request.args.get("next")
+            return redirect(next if next else "/")
         else:
             err_msg = "Tài khoản hoặc mật khẩu không đúng!"
 
     return render_template("login.html", err_msg=err_msg)
+
+
 
 @app.route("/login-admin", methods=["post"])
 def login_admin_process():
@@ -167,7 +170,7 @@ def pay():
     try:
         dao.add_receipt(cart)
     except Exception as ex:
-        return jsonify({"status": 500, "err_msg": ex})
+        return jsonify({"status": 500, "err_msg": str(ex)})
     else:
         del session['cart']
         return jsonify({"status": 200})

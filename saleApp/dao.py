@@ -5,6 +5,7 @@ from flask_login import current_user
 from saleApp.models import Category, Product, User, Receipt, ReceiptDetail
 from saleApp import app, db
 import hashlib
+from sqlalchemy import func
 
 
 def load_categories():
@@ -14,6 +15,13 @@ def load_categories():
 
 def count_product():
     return Product.query.count()
+
+def count_product_by_cate():
+    query = db.session.query(Category.id, Category.name, func.count(Product.id)).join(Product, Product.cate_id.__eq__(Category.id), isouter=True).group_by(Category.id)
+
+    print(query)
+
+    return query.all()
 
 def auth_user(username,password):
     password = hashlib.md5(password.encode("utf-8")).hexdigest()
@@ -69,16 +77,14 @@ def get_product_by_id(id):
 def add_receipt(cart):
     if cart:
         print(current_user)
-        r = Receipt(user=current_user)
+        r = Receipt(user_id=current_user.id)
         db.session.add(r)
 
-
         for p in cart.values():
-            d = ReceiptDetail(prod_id=p['id'], receipt=r, unit_price=p['price'], quantity=p['quantity'])
+            d = ReceiptDetail(prod_id=p["id"], receipt=r, unit_price=p["price"], quantity=p["quantity"])
             db.session.add(d)
 
         db.session.commit()
-
 
 
 if __name__=="__main__":
